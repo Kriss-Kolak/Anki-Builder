@@ -18,6 +18,19 @@ Features
 - Simple project structure that is easy to extend (multiple models, more fields,
   etc.).
 
+Architecture Overview
+---------------------
+1. `main.py` validates the CSV path and creates required folders defined in
+   `config/config.py`.
+2. `src/build_deck.py` transforms rows into notes, builds the `genanki` model and
+   forwards example sentences to the audio pipeline.
+3. `src/services/tts_factory.py` exposes cached instances of the Hugging Face
+   model/tokenizer so the heavy TTS objects are only loaded once per process.
+4. `src/get_audio.py` synthesises each sentence, post-processes the waveform and
+   stores the clip inside `audio_files/<deck>/`.
+5. `genanki.Package` bundles the notes together with the generated media and
+   writes the final `.apkg`.
+
 Requirements
 ------------
 - Python 3.12 or newer.
@@ -65,9 +78,9 @@ CSV Format
 The builder expects a semicolon-separated file with three columns:
 
 ```
-Polish;French;ExampleSentence
-wstawać;se lever;Je me lève à sept heures tous les jours.
-brać prysznic;se doucher;Il se douche rapidement avant le travail.
+French;Polish;ExampleSentence
+se lever;wstawać;Je me lève à sept heures tous les jours.
+se doucher;brać prysznic;Il se douche rapidement avant le travail.
 ```
 
 Headers are optional. When present, the first row **must** match the example
@@ -93,6 +106,24 @@ Importing the Deck
   audio will work immediately without manual copying.
 - If you replace an existing deck, let Anki update the notes so that fresh audio
   files are unpacked.
+
+Quick Demo
+----------
+The repository ships with a minimal sample deck:
+
+```
+examples/morning_routine.csv
+```
+
+Run the builder against it:
+
+```bash
+python3 main.py examples/morning_routine.csv
+```
+
+You will get `build_decks/morning_routine.apkg` that contains three Polish →
+French cards with synthesised audio. Import it into a fresh Anki profile to see
+the full pipeline in action within seconds.
 
 Development & Testing
 ---------------------
