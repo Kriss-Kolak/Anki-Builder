@@ -11,3 +11,6 @@ wheels/
 
 /build_decks
 /source_decks
+/audio_files
+
+test_audio.py

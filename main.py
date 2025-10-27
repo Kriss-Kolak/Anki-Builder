@@ -1,8 +1,11 @@
 from src.build_deck import build_deck
+from config.config import create_environment
 import argparse
 
 
 def main():
+
+    create_environment()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="input file path", type=str)
@@ -16,3 +19,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
