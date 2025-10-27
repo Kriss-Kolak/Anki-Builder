@@ -1,6 +1,6 @@
 import os
 from src.utils import hash_string_list
-from config.config import BUILD_AUDIO_FILES_PATH
+from config.config import BUILD_AUDIO_FILES_PATH, AUDIO_FILE_EXTENSION
 
 class Audio_File:
 
@@ -9,7 +9,8 @@ class Audio_File:
         self.hash_id: str = hash_id
         self.file_path: str = file_path
         self.is_created: bool = self._check_is_created()
-    
+
+
     def _check_is_created(self) -> bool:
         return os.path.exists(self.file_path)
                 
@@ -37,8 +38,14 @@ def get_Audio_Files_list(content_list: list[str]) -> list[Audio_File]:
     current_path = os.getcwd()
 
     for content, hash_id in zip(content_list, hash_list):
-        file_path = os.path.join(current_path, BUILD_AUDIO_FILES_PATH, hash_id)
+        file_path = os.path.join(current_path, BUILD_AUDIO_FILES_PATH, hash_id + AUDIO_FILE_EXTENSION)
         obj = Audio_File(content, hash_id, file_path)
         Audio_Files_list.append(obj)
 
     return Audio_Files_list
+
+def get_Audio_Files_paths(Audio_Files: list[Audio_File]) -> list[str]:
+    audio_files_paths: list[str] = []
+    for audio_file in Audio_Files:
+        audio_files_paths.append(audio_file.file_path)
+    return audio_files_paths
