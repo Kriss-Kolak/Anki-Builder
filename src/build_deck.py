@@ -4,7 +4,7 @@ import random
 
 
 from src.get_data import get_data_from_csv
-from config.config import BUILD_OUTPUT_PATH
+from config.config import BUILD_OUTPUT_PATH, BUILD_AUDIO_FILES_PATH
 from src.get_audio import create_audio
 from src.Audio_File import get_Audio_Files_list, get_Audio_Files_paths
 
@@ -19,8 +19,12 @@ def build_deck(file_path: str):
     if not file_path.endswith(".csv"):
         raise Exception("Provided file is not a csv file!")
     
-    file_name = os.path.basename(file_path)
+    file_name = os.path.basename(file_path).removesuffix(".csv")
     
+    deck_audio_folder = os.path.join(os.getcwd(), BUILD_AUDIO_FILES_PATH, file_name)
+
+    if not os.path.exists(deck_audio_folder):
+        os.mkdir(deck_audio_folder)
 
     deck = genanki.Deck(
         #TODO ZMIANA NUMERU
@@ -47,7 +51,7 @@ def build_deck(file_path: str):
 
     example_list = [row[2] for row in vocab]
 
-    audio_list = get_Audio_Files_list(example_list)
+    audio_list = get_Audio_Files_list(example_list, deck_audio_folder)
 
     create_audio(audio_list)
 
@@ -66,5 +70,5 @@ def build_deck(file_path: str):
     # Create package
     package = genanki.Package(deck)
     package.media_files = get_Audio_Files_paths(audio_list)
-    output_path = os.path.join(BUILD_OUTPUT_PATH, file_name.replace('csv','apkg'))
+    output_path = os.path.join(BUILD_OUTPUT_PATH, file_name + '.apkg')
     package.write_to_file(output_path)

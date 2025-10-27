@@ -1,37 +1,31 @@
-from transformers import VitsModel, AutoTokenizer
+
 import torch
 import scipy
 import numpy as np
 import os
 
-from config.config import BUILD_AUDIO_FILES_PATH
-from src.Audio_File import get_Audio_Files_list, Audio_File
+from src.Audio_File import Audio_File
+from src.services.tts_factory import get_model, get_tokenizer
 
 
 
 
 
+def create_audio(Audio_files: list[Audio_File]) -> None:
 
-def create_audio(content_list: list[str] | list[Audio_File]) -> None:
-    if len(content_list) == 0:
+    if len(Audio_files) == 0:
         raise Exception("Content list is empty")
 
-    if isinstance(content_list[0], str):
-        Audio_Files = get_Audio_Files_list(content_list)
-    elif isinstance(content_list[0], Audio_File):
-        Audio_Files = content_list
-    else:
-        raise Exception(f"Expected list[str] | list[Audio_file], got {type(content_list[0])}")
-
-    model = VitsModel.from_pretrained("facebook/mms-tts-fra")
-    tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-fra")
+    if not isinstance(Audio_files[0], Audio_File):
+        raise Exception(f"Expected list[Audio_file], got {type(Audio_files[0])}")
 
 
-
+    model = get_model()
+    tokenizer = get_tokenizer()
 
     sr = int(model.config.sampling_rate)
 
-    for audio_file in Audio_Files:
+    for audio_file in Audio_files:
         
         if audio_file.is_created:
             continue
@@ -63,7 +57,7 @@ def create_audio(content_list: list[str] | list[Audio_File]) -> None:
             audio *= (0.90 / peak)
 
         # 6) ZAPIS: na test zapisz float32 (eliminuje artefakty kwantyzacji)
-        out_path = os.path.join(BUILD_AUDIO_FILES_PATH, f"{audio_file.file_path}")
+        out_path = audio_file.file_path
         # scipy.io.wavfile.write(out_path, rate=sr, data=audio.astype(np.float32))
 
         # Jeśli MUSISZ mieć int16, odkomentuj te 3 linie (po teście):

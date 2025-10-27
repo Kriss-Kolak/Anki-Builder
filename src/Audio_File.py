@@ -1,6 +1,6 @@
 import os
 from src.utils import hash_string_list
-from config.config import BUILD_AUDIO_FILES_PATH, AUDIO_FILE_EXTENSION
+from config.config import AUDIO_FILE_EXTENSION
 
 class Audio_File:
 
@@ -26,7 +26,7 @@ class Audio_File:
                 """
     
 
-def get_Audio_Files_list(content_list: list[str]) -> list[Audio_File]:
+def get_Audio_Files_list(content_list: list[str], deck_audio_folder: str) -> list[Audio_File]:
     
     if len(content_list) == 0:
         raise Exception("Content list is empty")
@@ -35,10 +35,10 @@ def get_Audio_Files_list(content_list: list[str]) -> list[Audio_File]:
 
     hash_list = hash_string_list(content_list)
 
-    current_path = os.getcwd()
+    
 
     for content, hash_id in zip(content_list, hash_list):
-        file_path = os.path.join(current_path, BUILD_AUDIO_FILES_PATH, hash_id + AUDIO_FILE_EXTENSION)
+        file_path = os.path.join(deck_audio_folder, hash_id + AUDIO_FILE_EXTENSION)
         obj = Audio_File(content, hash_id, file_path)
         Audio_Files_list.append(obj)
 
