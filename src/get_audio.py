@@ -5,29 +5,12 @@ import numpy as np
 import os
 
 from config.config import BUILD_AUDIO_FILES_PATH
-from src.utils import hash_string_list
-from src.Audio_File import Audio_File
+from src.Audio_File import get_Audio_Files_list
 
 
 
 
-def get_Audio_Files_list(content_list: list[str]) -> list[Audio_File]:
-    
-    if len(content_list) == 0:
-        raise Exception("Content list is empty")
-    
-    Audio_Files_list: list[Audio_File] = []
 
-    hash_list = hash_string_list(content_list)
-
-    current_path = os.getcwd()
-
-    for content, hash_id in zip(content_list, hash_list):
-        file_path = os.path.join(current_path, BUILD_AUDIO_FILES_PATH, hash_id)
-        obj = Audio_File(content, hash_id, file_path)
-        Audio_Files_list.append(obj)
-
-    return Audio_Files_list
 
 def create_audio(content_list: list[str]) -> None:
     model = VitsModel.from_pretrained("facebook/mms-tts-fra")
@@ -35,12 +18,15 @@ def create_audio(content_list: list[str]) -> None:
 
     Audio_Files = get_Audio_Files_list(content_list)
 
-    hashed_list = hash_string_list(content_list)
     sr = int(model.config.sampling_rate)
 
-    for i, text in enumerate(content_list):
+    for audio_file in Audio_Files:
+        
+        if audio_file.is_created:
+            continue
+
         # 1) bez batcha i bez paddingu
-        inputs = tokenizer(text, return_tensors="pt")
+        inputs = tokenizer(audio_file.content, return_tensors="pt")
         with torch.no_grad():
             out = model(**inputs).waveform
 
@@ -66,7 +52,7 @@ def create_audio(content_list: list[str]) -> None:
             audio *= (0.90 / peak)
 
         # 6) ZAPIS: na test zapisz float32 (eliminuje artefakty kwantyzacji)
-        out_path = os.path.join(BUILD_AUDIO_FILES_PATH, f"{hashed_list[i]}.wav")
+        out_path = os.path.join(BUILD_AUDIO_FILES_PATH, f"{audio_file.file_path}.wav")
         scipy.io.wavfile.write(out_path, rate=sr, data=audio.astype(np.float32))
 
         # Jeśli MUSISZ mieć int16, odkomentuj te 3 linie (po teście):

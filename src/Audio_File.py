@@ -1,14 +1,44 @@
 import os
+from src.utils import hash_string_list
+from config.config import BUILD_AUDIO_FILES_PATH
 
 class Audio_File:
 
-    def __init__(self, content, hash_id, file_path):
-        self.content = content
-        self.hash_id = hash_id
-        self.file_path = file_path
-        self.is_created = self._check_is_created()
+    def __init__(self, content: str, hash_id: str, file_path: str):
+        self.content: str = content
+        self.hash_id: str = hash_id
+        self.file_path: str = file_path
+        self.is_created: bool = self._check_is_created()
     
     def _check_is_created(self) -> bool:
-        if os.path.exists(self.file_path):
-            return True
-        return False
+        return os.path.exists(self.file_path)
+                
+    def __str__(self):
+        return f"""
+                <------------------------------> \n
+                Audio_File \n
+                Content: {self.content} \n
+                Hash_id: {self.hash_id} \n
+                File_path: {self.file_path} \n
+                Is_created: {self.is_created} \n
+                <------------------------------> \n
+                """
+    
+
+def get_Audio_Files_list(content_list: list[str]) -> list[Audio_File]:
+    
+    if len(content_list) == 0:
+        raise Exception("Content list is empty")
+    
+    Audio_Files_list: list[Audio_File] = []
+
+    hash_list = hash_string_list(content_list)
+
+    current_path = os.getcwd()
+
+    for content, hash_id in zip(content_list, hash_list):
+        file_path = os.path.join(current_path, BUILD_AUDIO_FILES_PATH, hash_id)
+        obj = Audio_File(content, hash_id, file_path)
+        Audio_Files_list.append(obj)
+
+    return Audio_Files_list
