@@ -6,11 +6,18 @@ class TestGetData(unittest.TestCase):
 
     def test_basic_invalid_file(self):
         with self.assertRaises(Exception):
-            result = get_data_from_csv("random_file")
+            _ = get_data_from_csv("random_file")
     
     def test_basic_invalid_path(self):
         with self.assertRaises(Exception):
-            result = get_data_from_csv("./source_decks")
+            _ = get_data_from_csv("./source_decks")
+
+    def test_valid_file(self):
+        result = get_data_from_csv("tests/fixtures/test.csv")
+        self.assertEqual(result, 
+                         [("French","Polish","ExampleSentence"),
+                          ("bonjour","dzień dobry","Bonjour tout le monde.")])
+        
 
 if __name__ == "__main__":
     unittest.main()
